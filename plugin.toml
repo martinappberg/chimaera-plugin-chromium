@@ -1,0 +1,60 @@
+id = "chromium"
+name = "Chromium"
+version = "0.1.0"
+summary = "A headless Chromium for agents' browser tools on a host with no Chrome, downloaded only when you click Install."
+description = "Chimaera's agent browser drives a headless Chrome or Chromium when no app window is connected, for example in a cluster job or on a remote Linux host. This plugin gives a host that has none Google's Chrome for Testing headless shell. Nothing is downloaded until you click Install under Tools; the download is pinned to one version and checked against its sha256 as it streams, and lands in Chimaera's tools folder (about 290 MB unpacked on Linux), never on the system. It serves the agents of workspaces where it is switched on, and only when the host has no Chrome or Chromium of its own."
+homepage = "https://github.com/martinappberg/chimaera-plugin-chromium"
+api = "0.2"
+
+[provides]
+browser = "chrome-headless-shell"
+
+[adds]
+agents = ["browser_* tools work on this host without a Chrome install (the Chromium engine runs this plugin's chrome-headless-shell)"]
+
+[[programs]]
+name = "chrome-headless-shell"
+version = ["--version"]
+
+[[tools]]
+id = "chrome-headless-shell"
+name = "Chrome for Testing headless shell"
+version = "157.0.8103.38"
+programs = ["chrome-headless-shell"]
+home = "https://googlechromelabs.github.io/chrome-for-testing/"
+
+# Pinned with scripts/pin.sh: the sha256 and size of each download.
+[[tools.artifacts]]
+platform = "linux-x86_64"
+url = "https://storage.googleapis.com/chrome-for-testing-public/157.0.8103.38/linux64/chrome-headless-shell-linux64.zip"
+sha256 = "deafffa74660b34853a4119c361fd427ac8c9fcb62db51ddb8a797cd83a4ba2d"
+size = 128168542
+unpack = "zip"
+bin = "chrome-headless-shell-linux64"
+
+[[tools.artifacts]]
+platform = "linux-aarch64"
+url = "https://storage.googleapis.com/chrome-for-testing-public/157.0.8103.38/linux-arm64/chrome-headless-shell-linux-arm64.zip"
+sha256 = "b9b910a57b2a15eb3e55000a2339f93a973934a413ebfc6e585a50ec6c42fd6c"
+size = 128171139
+unpack = "zip"
+bin = "chrome-headless-shell-linux-arm64"
+
+[[tools.artifacts]]
+platform = "macos-x86_64"
+url = "https://storage.googleapis.com/chrome-for-testing-public/157.0.8103.38/mac-x64/chrome-headless-shell-mac-x64.zip"
+sha256 = "79821745d0a72d2ba752d981284ed0a9e6fa320dad133596941a17dba6186de3"
+size = 110442262
+unpack = "zip"
+bin = "chrome-headless-shell-mac-x64"
+
+[[tools.artifacts]]
+platform = "macos-aarch64"
+url = "https://storage.googleapis.com/chrome-for-testing-public/157.0.8103.38/mac-arm64/chrome-headless-shell-mac-arm64.zip"
+sha256 = "e6a6b13551aa12f951d0891d79282606b13742837c8fa0505e1272bae116ce82"
+size = 104773711
+unpack = "zip"
+bin = "chrome-headless-shell-mac-arm64"
+
+[release]
+github = "martinappberg/chimaera-plugin-chromium"

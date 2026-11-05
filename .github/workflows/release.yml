@@ -1,0 +1,59 @@
+# A tag `vX.Y.Z` builds the component and publishes a GitHub release carrying
+# plugin.wasm, plugin.toml and SHA256SUMS — the three files a Chimaera daemon
+# installs from (`chimaera plugin add owner/repo`, the Plugins tab, or the
+# daemon's own plugins.lock). The tag, Cargo.toml and plugin.toml must agree.
+# Run by hand (workflow_dispatch) instead, it releases plugin.toml's version and
+# creates that tag at the commit it built; it refuses a version already tagged.
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      # rust-toolchain.toml pins the channel and the wasm32-wasip2 target.
+      - run: rustup show
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+      - name: versions agree
+        run: |
+          set -euo pipefail
+          crate="$(cargo pkgid | sed 's/.*[#@]//')"
+          manifest="$(grep -E '^version *= *"' plugin.toml | head -1 | cut -d'"' -f2)"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            tag="$manifest"
+            if git ls-remote --exit-code --tags origin "refs/tags/v$tag" >/dev/null; then
+              echo "v$tag is already tagged; bump the version to release again" >&2
+              exit 1
+            fi
+          else
+            tag="${GITHUB_REF_NAME#v}"
+          fi
+          if [ "$tag" != "$crate" ] || [ "$tag" != "$manifest" ]; then
+            echo "tag v$tag, Cargo.toml $crate and plugin.toml $manifest must agree" >&2
+            exit 1
+          fi
+          echo "TAG=v$tag" >> "$GITHUB_ENV"
+      # Every pinned download is still exactly the file plugin.toml names.
+      - name: pins hold
+        run: scripts/pin.sh --check
+      - name: build the component
+        run: |
+          set -euo pipefail
+          cargo build --release --target wasm32-wasip2 --locked
+          mkdir -p dist
+          cp target/wasm32-wasip2/release/*.wasm dist/plugin.wasm
+          cp plugin.toml dist/plugin.toml
+          (cd dist && sha256sum plugin.wasm plugin.toml > SHA256SUMS && cat SHA256SUMS)
+      - name: publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" dist/plugin.wasm dist/plugin.toml dist/SHA256SUMS \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes "plugin.wasm (wasm32-wasip2), plugin.toml and SHA256SUMS for Chimaera. Install: chimaera plugin add ${GITHUB_REPOSITORY}"

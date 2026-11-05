@@ -1,0 +1,22 @@
+[package]
+name = "chimaera-plugin-chromium"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/martinappberg/chimaera-plugin-chromium"
+description = "Chromium for Chimaera: a headless browser for agents' browser tools on a host with none, downloaded on the user's click."
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# The chimaera:plugin WIT world (API 0.2) and its Rust bindings, from the
+# daemon's repository, pinned to a commit so a release is reproducible.
+chimaera-plugin-api = { git = "https://github.com/martinappberg/chimaera.git", rev = "66f5f2d1a7b4d29d24b5f7b06964c25504a02ed9" }
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
+opt-level = "s"
