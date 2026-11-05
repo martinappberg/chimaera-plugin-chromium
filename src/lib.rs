@@ -27,7 +27,12 @@ mod tests {
             .find_map(|l| l.strip_prefix("version = \""))
             .and_then(|v| v.strip_suffix('"'))
             .expect("the tool's version");
-        for platform in ["linux-x86_64", "linux-aarch64", "macos-x86_64", "macos-aarch64"] {
+        for platform in [
+            "linux-x86_64",
+            "linux-aarch64",
+            "macos-x86_64",
+            "macos-aarch64",
+        ] {
             let line = format!("platform = \"{platform}\"");
             assert_eq!(MANIFEST.matches(&line).count(), 1, "{platform}");
         }
@@ -40,7 +45,10 @@ mod tests {
             assert!(url.starts_with("https://storage.googleapis.com/chrome-for-testing-public/"));
             assert!(url.contains(&format!("/{version}/")), "{url}");
         }
-        let shas = MANIFEST.lines().filter(|l| l.starts_with("sha256 = \"")).count();
+        let shas = MANIFEST
+            .lines()
+            .filter(|l| l.starts_with("sha256 = \""))
+            .count();
         assert_eq!(shas, 4);
     }
 }
